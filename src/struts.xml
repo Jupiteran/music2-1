@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+     <constant name="struts.multipart.maxSize" value="30000000"/>    
+     <constant name="struts.i18n.encoding" value="utf-8"/>
+     <constant name="struts.devMode" value="true" />
+     <!--Struts2中Action对象的创建交给spring完成-->
+     <constant name="struts.objectFactory" value="spring" />   
+     
+     <package name="default" extends="struts-default">  <!-- 注意此包的写法 -->
+         <!-- 配置一个拦截器 -->
+	     <interceptors>
+	        <!-- 拦截器对应的class是 com.music.util.LoginInterceptors-->   
+	        <interceptor name="LoginInterceptors" class="com.music.util.LoginInterceptors">
+	           <!-- excludeName 是例外的action，也就是下面这几个action不会被拦截--> 
+	           <param name="excludeName">user_login,user_reg,user_showReg,song_showDetail,song_showSong,song_showSongByGenre</param>
+	           <!-- user可以作为参数传递，取自session.put("user", db_user);中的这个user-->
+	           <param name="sessionName">user</param>
+	        </interceptor>    
+	        <!-- 定义拦截器 栈，用来放拦截器，其中LoginInterceptors是登录拦截器，也就是我们自定义的这个拦截器，
+	             defaultStack是struts默认拦截器，必须加上，否则struts自带的很多功能就没法用，比如传参--> 
+	        <interceptor-stack name="myInterceptors">
+	           <interceptor-ref name="defaultStack"></interceptor-ref>   
+	           <interceptor-ref name="LoginInterceptors"/>                  
+	        </interceptor-stack>      
+	     </interceptors>
+	     <!-- 将上面的拦截器栈作为这个工程的拦截器，也就是自定义的登录拦截器和 struts默认拦截器都起作用-->
+	     <default-interceptor-ref name="myInterceptors"></default-interceptor-ref>
+	     <!-- 适用于所有的action -->
+	     <global-results>
+	          <result name="success" type="redirect">${prePage}</result> 
+	          <result name="index" type="redirect" >/index.jsp</result>
+	          <result name="login" type="redirect">/login.jsp</result>
+	     </global-results>
+	     
+	     
+     </package>
+     <package name="singer" namespace="/singer" extends="default">
+	        <action name="singer_*" class="singerAction" method="{1}">
+	        <result name="show_singers">/showSingers.jsp</result>
+	        <result name="message_singer">/message_singer.jsp</result>
+	        <result name="addSinger">/addSinger.jsp</result>
+	        <result name="detail_singer">/detail_singer.jsp</result>
+	        <result name="edit_singer">/edit_singer.jsp</result>
+	        <result name="edit_singer_message">/edit_singer_message.jsp</result>
+	        <result name="delete_singer">/delete_singer.jsp</result>
+	        </action>
+	 </package>  
+     <package name="song" namespace="/song" extends="default">
+	        <action name="song_*" class="songAction" method="{1}">
+	        	<result name="message">/message.jsp</result>
+	        	<result name="show_view">/main.jsp</result>
+	        	<result name="detail_view">/detail.jsp</result>
+	        	<result name="edit_view">/edit.jsp</result>
+	        	<result name="delete_message">/delete_message.jsp</result>
+	        	<result name="edit_message">/edit_message.jsp</result>
+	        	<result name="pop">/pop music.jsp</result>
+	        	<result name="country">/country music.jsp</result>
+	        	<result name="folk">/folk music.jsp</result>
+	        	<result name="Rhythm and Blues">/Rhythm and Blues.jsp</result>
+	        	<result name="RR">/Rock and Roll.jsp</result>
+	        	<result name="addSong">/add.jsp</result>
+	        </action>  
+	 </package>
+	  <package name="user" namespace="/user" extends="default" >
+	        <action name="user_*" class="userAction" method="{1}">
+	            <result name="show_view" type="chain"><!-- chain表示跳到songAction 用songAction里的方法和命名空间 -->
+	              <param name="actionName">song_showSong</param> 
+                  <param name="namespace">/song</param>
+                  <param name="param1">${user.username}</param>
+                </result>
+                <result name="login_message">/index.jsp</result>
+                <result name="input">/reg.jsp</result>
+	        </action>  
+
+	       
+	 </package>
+      
+	 	 
+</struts>
